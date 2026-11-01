@@ -8,6 +8,7 @@
       if (!state) return;
       state.restore();
       state.observer.disconnect();
+      doc.removeEventListener("click", state.onCustomTab, true);
       state.button.remove();
       state.view.destroy();
       states.delete(root);
@@ -48,7 +49,21 @@
         button.hidden = false;
         view.clear();
       };
-      const view = globalThis.PlurkBatchView.create(doc, () => { restore(); button.focus(); }, api);
+      const view = globalThis.PlurkBatchView.create(doc, refreshNative => {
+        restore();
+        if (!refreshNative || !parts.refreshNative?.()) button.focus();
+      }, api);
+      const onCustomTab = event => {
+        const tab = event.target.closest?.('#pop-window-tabs a[data-fragment="em"]');
+        if (!tab || tab.classList.contains("disabled") || !root.isConnected ||
+            !view.needsNativeRefresh) return;
+        // Reload before the native tab handler renders the stale collection.
+        if (parts.refreshNative?.()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      };
+      doc.addEventListener("click", onCustomTab, true);
       button.addEventListener("click", () => {
         if (saved) return;
         if (parts.prepareView) parts.prepareView(view.host);
@@ -66,7 +81,7 @@
         if (!entryHost.contains(button) || !panelHost.contains(view.host) || records.some(record => !owned(record.target) &&
           [...record.addedNodes, ...record.removedNodes].some(node => !owned(node)))) reconcile(root);
       });
-      states.set(root, { entryHost, panelHost, regions: nativeRegions, button, view, restore, observer });
+      states.set(root, { entryHost, panelHost, regions: nativeRegions, button, view, restore, observer, onCustomTab });
       entryHost.append(button);
       panelHost.append(view.host);
       observer.observe(root, { childList: true, subtree: true });

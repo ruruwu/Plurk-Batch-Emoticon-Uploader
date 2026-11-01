@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Plurk Batch Emoticon Uploader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icons": {
     "16": "icons/Vector (11).png",
     "32": "icons/Vector (10).png",

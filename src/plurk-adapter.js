@@ -18,6 +18,25 @@ globalThis.PlurkBatchAdapter = {
         !panel.querySelector('input#file-uploader-selecter[type="file"]')) return null;
     return {
       entryHost: panel.querySelector("#file-uploader"), panelHost: root, nativeRegions: [panel],
+      refreshNative() {
+        const win = root.ownerDocument.defaultView;
+        const checks = {
+          connected: root.isConnected,
+          hasWindow: !!win,
+          framed: !!win && win !== win.top,
+          originMatches: win?.location.origin === "https://www.plurk.com",
+          pathMatches: /^\/EmoticonManager2\/?$/.test(win?.location.pathname || "")
+        };
+        if (!Object.values(checks).every(Boolean)) {
+          return false;
+        }
+        try {
+          win.location.reload();
+          return true;
+        } catch {
+          return false;
+        }
+      },
       prepareView(host) {
         // Measure the visible native panel before hiding it. Fixed positioning
         // avoids relying on the site's unknown absolute-positioned fragment CSS.

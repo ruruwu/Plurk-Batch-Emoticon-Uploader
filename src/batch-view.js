@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   "use strict";
   function create(doc, onBack, api = null) {
     const host = doc.createElement("div");
@@ -93,6 +93,7 @@
     let groups = [];
     let loading = false;
     let destroyed = false;
+    let refreshNativeOnBack = false;
     const states = { pending: "等待上傳", uploading: "正在上傳圖片…", uploaded: "圖片已上傳，等待新增表符", adding: "正在新增表符…", success: "已新增", failed: "這張還沒完成", unknown: "還不確定是否新增成功" };
     const runner = api ? globalThis.PlurkBatchCore.createQueue(api, { onChange: () => render() }) : null;
     const updateControls = () => {
@@ -216,6 +217,7 @@
       updateControls();
     }
     const clear = () => {
+      refreshNativeOnBack = false;
       urls.forEach(url => URL.revokeObjectURL(url));
       urls = [];
       entries = [];
@@ -255,6 +257,8 @@
         render();
         const result = await resultPromise;
         if (destroyed) return;
+        refreshNativeOnBack = !result.stopped &&
+          (refreshNativeOnBack || entries.some(entry => entry.status === "success"));
         const completed = entries.every(entry => entry.status === "success");
         if (completed) target.value = "";
         if (result.collection && !result.syncError) setCollection(result.collection);
@@ -264,8 +268,12 @@
       } catch { if (!destroyed) status.textContent = "還不能開始上傳，請確認已選好群組，也看看各張圖片的提示。"; }
       finally { if (!destroyed) render(); }
     });
-    back.addEventListener("click", onBack);
-    return { host, clear, setCollection, open() { if (api) void refreshGroups(); }, destroy() { destroyed = true; runner?.stop(); clear(); host.remove(); } };
+    back.addEventListener("click", () => {
+      onBack(refreshNativeOnBack);
+    });
+    return { host, clear, setCollection,
+      get needsNativeRefresh() { return refreshNativeOnBack && !runner?.running; },
+      open() { if (api) void refreshGroups(); }, destroy() { destroyed = true; runner?.stop(); clear(); host.remove(); } };
   }
   globalThis.PlurkBatchView = { create };
 })();
