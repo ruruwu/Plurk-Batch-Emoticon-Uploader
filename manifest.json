@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Plurk Batch Emoticon Uploader",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/Vector (11).png",
+    "32": "icons/Vector (10).png",
+    "48": "icons/Vector (9).png",
+    "128": "icons/Vector (8).png"
+  },
+  "description": "在噗浪的表符管理介面選擇多張圖片、預覽並調整順序，再依序上傳。",
+  "permissions": ["scripting"],
+  "host_permissions": ["https://www.plurk.com/*"],
+  "background": { "service_worker": "src/background.js" },
+  "content_scripts": [{
+    "matches": [
+      "https://www.plurk.com/EmoticonManager2",
+      "https://www.plurk.com/EmoticonManager2?*",
+      "https://www.plurk.com/EmoticonManager2/",
+      "https://www.plurk.com/EmoticonManager2/?*"
+    ],
+    "all_frames": true,
+    "js": ["src/upload-core.js", "src/api-client.js", "src/batch-view.js", "src/integration.js", "src/plurk-adapter.js", "src/content.js"],
+    "run_at": "document_idle"
+  }]
+}

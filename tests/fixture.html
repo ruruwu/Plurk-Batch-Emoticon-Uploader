@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<title>Phase 1 合成 DOM 測試頁（非噗浪 DOM）</title>
+<style>body{font:15px sans-serif;max-width:760px;margin:32px auto}#manager{border:1px solid #aaa;padding:16px}button{margin:4px}pre{white-space:pre-wrap}</style>
+<h1>Phase 1 合成 DOM 測試頁</h1>
+<p>這些選擇器只用於此測試頁，不代表噗浪實作。關閉時會移除視窗；返回時清除圖片與欄位。</p>
+<button id="open">開啟測試視窗</button><button id="close">關閉視窗</button><button id="render">重繪內容</button><button id="checks">執行生命週期檢查</button>
+<div id="mount"></div><pre id="results" role="status"></pre>
+<script src="../src/upload-core.js"></script><script src="../src/batch-view.js"></script><script src="../src/integration.js"></script><script src="fixture.js"></script>
+</html>
