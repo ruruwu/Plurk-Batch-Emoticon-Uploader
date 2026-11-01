@@ -5,6 +5,36 @@
  */
 // Selectors below come from user-provided DOM, not a live browser inspection.
 globalThis.PlurkBatchAdapter = {
+  restoreGroup(doc) {
+    const win = doc.defaultView;
+    const key = "plurk-batch-restore-group-v1";
+    let saved;
+    try {
+      saved = JSON.parse(win.sessionStorage.getItem(key));
+      win.sessionStorage.removeItem(key);
+    } catch { return; }
+    if (!saved || !/^\d+$/.test(saved.id) ||
+        !Number.isFinite(saved.at) || Math.abs(Date.now() - saved.at) > 30000) return;
+    let timer;
+    let done = false;
+    const observer = new MutationObserver(restore);
+    function restore() {
+      if (done) return;
+      const host = doc.querySelector("#em-groups-bar-fragment-host");
+      // Wait for native initialization to select its default group before
+      // restoring the previous selection through the native click handler.
+      if (!host?.querySelector("li.current[data-g]")) return;
+      const group = host.querySelector(`li[data-g="${saved.id}"]`);
+      if (!group) return;
+      done = true;
+      observer.disconnect();
+      clearTimeout(timer);
+      group.click();
+    }
+    observer.observe(doc.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    timer = setTimeout(() => { done = true; observer.disconnect(); }, 10000);
+    restore();
+  },
   findRoots(scope) {
     const roots = new Set(scope.querySelectorAll("#uploader-fragment"));
     const enclosing = scope.closest?.("#uploader-fragment");
@@ -31,6 +61,16 @@ globalThis.PlurkBatchAdapter = {
           return false;
         }
         try {
+          // Keep only the native selection, not the batch upload target.
+          // sessionStorage survives this iframe reload and is consumed once.
+          try {
+            const id = root.ownerDocument.querySelector(
+              '#em-groups-bar-fragment-host li.current[data-g]'
+            )?.getAttribute("data-g");
+            if (/^\d+$/.test(id || "")) win.sessionStorage.setItem(
+              "plurk-batch-restore-group-v1", JSON.stringify({ id, at: Date.now() })
+            );
+          } catch { /* Storage restrictions must not prevent refreshing. */ }
           win.location.reload();
           return true;
         } catch {

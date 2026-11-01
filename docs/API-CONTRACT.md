@@ -38,3 +38,5 @@ upload 必須 ok===true 且 hash_id 非空；add 必須 ok===true 且 keyword �
 
 權限依據：[Chrome scripting API](https://developer.chrome.com/docs/extensions/reference/api/scripting)、[背景跨來源請求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)。
 
+1.0.2：自訂表情頁籤會等待佇列收尾後刷新，避免第一次點擊遺失。重載前以 sessionStorage 單次標記保存原生群組 ID 與時間，重新載入後立即消耗標記，等待原生群組初始化完成後以原生點擊事件選回；標記有效期 30 秒，等待最多 10 秒。此群組還原流程已由維護者於噗浪實測確認。
+

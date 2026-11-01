@@ -94,6 +94,7 @@
     let loading = false;
     let destroyed = false;
     let refreshNativeOnBack = false;
+    let pendingRun = null;
     const states = { pending: "等待上傳", uploading: "正在上傳圖片…", uploaded: "圖片已上傳，等待新增表符", adding: "正在新增表符…", success: "已新增", failed: "這張還沒完成", unknown: "還不確定是否新增成功" };
     const runner = api ? globalThis.PlurkBatchCore.createQueue(api, { onChange: () => render() }) : null;
     const updateControls = () => {
@@ -254,6 +255,7 @@
       if (upload.disabled) return;
       try {
         const resultPromise = runner.run(entries, Number(target.value));
+        pendingRun = resultPromise;
         render();
         const result = await resultPromise;
         if (destroyed) return;
@@ -266,13 +268,20 @@
           (completed ? "這批都完成了！要上傳下一批，請重新選擇群組和圖片。" : "") +
           (!completed ? (result.stopped ? "上傳已停止，請查看各張圖片的提示。" : "請查看各張圖片的提示。") : "") + (result.syncError ? "暫時無法更新表符清單，請稍後點「重新整理群組」。" : "");
       } catch { if (!destroyed) status.textContent = "還不能開始上傳，請確認已選好群組，也看看各張圖片的提示。"; }
-      finally { if (!destroyed) render(); }
+      finally { pendingRun = null; if (!destroyed) render(); }
     });
     back.addEventListener("click", () => {
       onBack(refreshNativeOnBack);
     });
     return { host, clear, setCollection,
       get needsNativeRefresh() { return refreshNativeOnBack && !runner?.running; },
+      get nativeRefreshPending() { return !!pendingRun || refreshNativeOnBack; },
+      async waitForNativeRefresh() {
+        // The per-image success label precedes the queue's final collection
+        // read. A tab click during that read must not lose the refresh request.
+        try { if (pendingRun) await pendingRun; } catch { return false; }
+        return !destroyed && refreshNativeOnBack && !runner?.running;
+      },
       open() { if (api) void refreshGroups(); }, destroy() { destroyed = true; runner?.stop(); clear(); host.remove(); } };
   }
   globalThis.PlurkBatchView = { create };

@@ -53,15 +53,26 @@
         restore();
         if (!refreshNative || !parts.refreshNative?.()) button.focus();
       }, api);
+      let returningToCustom = false;
       const onCustomTab = event => {
         const tab = event.target.closest?.('#pop-window-tabs a[data-fragment="em"]');
         if (!tab || tab.classList.contains("disabled") || !root.isConnected ||
-            !view.needsNativeRefresh) return;
-        // Reload before the native tab handler renders the stale collection.
-        if (parts.refreshNative?.()) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-        }
+            !parts.refreshNative || !view.nativeRefreshPending) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (returningToCustom) return;
+        returningToCustom = true;
+        void (async () => {
+          const refresh = await view.waitForNativeRefresh();
+          returningToCustom = false;
+          if (!root.isConnected || states.get(root)?.view !== view) return;
+          if (refresh && parts.refreshNative()) return;
+          // On a stopped/failed run, allow native navigation without issuing
+          // another API request or replaying this interception.
+          doc.removeEventListener("click", onCustomTab, true);
+          try { tab.click(); }
+          finally { doc.addEventListener("click", onCustomTab, true); }
+        })();
       };
       doc.addEventListener("click", onCustomTab, true);
       button.addEventListener("click", () => {
