@@ -148,4 +148,3 @@ node --test tests/upload-core.test.js tests/background.test.js
 
 - [API 接線紀錄](docs/API-CONTRACT.md)
 - [權限審查與人工驗證清單](docs/PERMISSION-AUDIT.md#上架前-regression-checklist)
-- [介面文案清單](docs/UI-COPY.md)
