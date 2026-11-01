@@ -95,7 +95,9 @@
 - **預覽與進度存在哪裡？** 所選圖片的預覽在本機產生，清單與處理結果只暫存在記憶體中，不會保存成可恢復的上傳紀錄。
 - **群組圖示從哪裡載入？** 會從噗浪 CDN 或噗浪回傳的 HTTPS 縮圖網址載入。這些圖片主機會收到一般圖片請求資訊，例如 IP 位址；程式已設定不傳送來源頁網址。
 
-完整資料處理說明請見 [隱私政策](PRIVACY.md)；技術細節請見 [API 接線紀錄](docs/API-CONTRACT.md) 與 [權限審查](docs/PERMISSION-AUDIT.md)。
+完整資料處理說明請見 [隱私政策](docs/privacy.md)；技術細節請見 [API 接線紀錄](docs/API-CONTRACT.md) 與 [權限審查](docs/PERMISSION-AUDIT.md)。
+
+供 Chrome Web Store 使用的政策頁網址與發布方式，請見 [GitHub Pages 設定說明](docs/GITHUB-PAGES.md)。
 
 ## 開發資訊
 

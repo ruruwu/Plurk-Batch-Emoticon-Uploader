@@ -1,0 +1,8 @@
+title: Plurk Batch Emoticon Uploader
+description: 噗浪表符批次上傳工具
+lang: zh-Hant
+theme: jekyll-theme-primer
+url: https://ruruwu.github.io
+baseurl: /Plurk-Batch-Emoticon-Uploader
+exclude:
+  - GITHUB-PAGES.md
